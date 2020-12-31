@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+option csharp_namespace = "GrpcIPC";
+
+// import "google/protobuf/empty.proto";
+
+package pubsub;
+
+
+service PubSub {
+  rpc Subscribe (SubscribeRequest) returns (PubSubReceipt);
+  rpc StartReceiveStream (AddStreamRequest) returns (stream PubSubMessage);
+  rpc Publish (PubSubMessage) returns (PubSubReceipt);
+}
+
+message SubscribeRequest {
+  /*GUID*/
+  string connectionId = 1;
+  repeated string topics = 2;
+}
+
+message PubSubReceipt {
+  bool success = 1;
+  string message = 2;
+}
+
+message PubSubMessage {
+  /*GUID*/
+  string connectionId = 1;
+  string topic = 2;
+  string message = 3;
+}
+
+message AddStreamRequest {
+  /*GUID*/
+  string connectionId = 1;
+}
