@@ -6,7 +6,7 @@ This example will use UnixDomainSockets as transport for efficient IPC between p
 ## Example
 
 The sample client will publish messages with the topics `foo/bar/baz` and `foo/baz/bar`.
-The example supports MQTT subscriptions to that you can use wildcards...
+The example supports MQTT-like subscriptions so that you can use wildcards...
 For example `foo/+/baz` will match `foo/bar/baz` and `foo/#` will match both `foo/bar/baz` and `foo/baz/bar`
 
  1. Start the server
