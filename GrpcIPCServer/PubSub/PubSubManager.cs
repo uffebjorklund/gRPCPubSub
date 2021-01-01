@@ -14,6 +14,7 @@ namespace GrpcIPCServer.PubSub
 
         public async Task Publish(string topic, string message)
         {
+            // TODO: if topic matches connection id send directly to that connection.
             var msg = new PubSubMessage{Topic = topic, Message = message};
             foreach(var writer in this.GeSubscriptions(topic))
             {
