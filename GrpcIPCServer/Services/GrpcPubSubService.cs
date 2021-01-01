@@ -39,16 +39,24 @@ namespace GrpcIPCServer.Services
         {
             try
             {
-                // TODO: use channels instead... and return a channel reader from the pubsubmanager
-                this.PubSubManager.AddStream(request.ConnectionId, responseStream);
-                while(context.CancellationToken.IsCancellationRequested is false)
+                var channelReader = this.PubSubManager.AddStream(request.ConnectionId);
+                if(channelReader is null)
                 {
-                    await Task.Delay(500);
+                    return;
+                }
+
+                await foreach (var msg in channelReader.ReadAllAsync())
+                {
+                    if(context.CancellationToken.IsCancellationRequested is true)
+                    {
+                        break;
+                    }
+                    await responseStream.WriteAsync(msg);
                 }
             }
             catch(Exception ex)
             {
-                this.Logger.LogWarning($"Exception {ex.Message}");
+                this.Logger.LogWarning($"Stream error: {ex.Message}");
             }
             finally
             {

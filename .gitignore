@@ -24,10 +24,10 @@ project.lock.json
 project.fragment.lock.json
 artifacts/
 
-Properties/*
 .vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
-*.code-workspace
+
+**/.history

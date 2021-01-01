@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 using Grpc.Core;
 using GrpcIPC;
@@ -14,10 +15,10 @@ namespace GrpcIPCServer.PubSub
         public async Task Publish(string topic, string message)
         {
             var msg = new PubSubMessage{Topic = topic, Message = message};
-            foreach(var stream in this.GeSubscriptionStreams(topic))
+            foreach(var writer in this.GeSubscriptions(topic))
             {
                 // TODO: Handle exceptions...
-                await stream.WriteAsync(msg);
+                await writer.WriteAsync(msg);
             }
         }
 
@@ -41,35 +42,39 @@ namespace GrpcIPCServer.PubSub
             this.Subscriptions.TryRemove(Guid.Parse(connectionId), out SubscriptionContext value);
         }
 
-        public bool AddStream(string connectionId, IServerStreamWriter<PubSubMessage> responseStream)
+        public ChannelReader<PubSubMessage> AddStream(string connectionId)
         {
             if (Guid.TryParse(connectionId, out Guid id) is false)
             {
-                return false;
+                return null;
             }
             if (this.Subscriptions.ContainsKey(id) is false)
             {
-                return this.Subscriptions.TryAdd(id, new SubscriptionContext(id));
+                if(this.Subscriptions.TryAdd(id, new SubscriptionContext(id)) is false)
+                {
+                    return null;
+                }
             }
 
-            this.Subscriptions[id].streamWriter = responseStream;
-            return true;
+            return this.Subscriptions[id].Reader;
         }
 
-        private IEnumerable<IServerStreamWriter<PubSubMessage>> GeSubscriptionStreams(string topic)
+        private IEnumerable<ChannelWriter<PubSubMessage>> GeSubscriptions(string topic)
         {
+            // TODO: Add cache
             foreach(var subscriptionContext in this.Subscriptions)
             {
-                if(subscriptionContext.Value.streamWriter == null)
+                if(subscriptionContext.Value.Writer == null)
                 {
                     continue;
                 }
 
                 foreach(var t in subscriptionContext.Value.Topics)
                 {
+                    // TODO: use MQTT matching for topics
                     if(t == topic)
                     {
-                        yield return subscriptionContext.Value.streamWriter;
+                        yield return subscriptionContext.Value.Writer;
                         break;
                     }
                 }

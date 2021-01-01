@@ -22,8 +22,11 @@ namespace GrpcIPCClient
             var connId = Guid.NewGuid().ToString("N");
             subReq.ConnectionId = connId;
 
-            subReq.Topics.Add("foo/bar");
-            subReq.Topics.Add("foo/bar/baz");
+            foreach(var topic in args)
+            {
+                subReq.Topics.Add(topic);
+            }
+
             var subResponse = await client.SubscribeAsync(subReq);
             Console.WriteLine("SubResponse: success = " + subResponse.Success);
 
@@ -53,7 +56,7 @@ namespace GrpcIPCClient
                     var m = new PubSubMessage();
                     m.ConnectionId = connId;
                     m.Topic = "foo/bar";
-                    m.Message = "Hello foo/bar";
+                    m.Message = $"Hello foo/bar from {connId}";
                     await client.PublishAsync(m);
 
                     await Task.Delay(5000);
