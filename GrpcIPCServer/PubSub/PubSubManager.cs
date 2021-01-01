@@ -3,7 +3,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Channels;
 using System.Threading.Tasks;
-using Grpc.Core;
 using GrpcIPC;
 
 namespace GrpcIPCServer.PubSub
@@ -12,7 +11,6 @@ namespace GrpcIPCServer.PubSub
     {
         private readonly ConcurrentDictionary<Guid, SubscriptionContext> Subscriptions = new ();
         private HashSet<string> cache = new();
-
 
         public async Task Publish(string topic, string message)
         {

@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using GrpcIPC;
 using GrpcIPCServer.PubSub;
@@ -21,17 +20,15 @@ namespace GrpcIPCServer.Services
 
         public override async Task<PubSubReceipt> Publish(PubSubMessage request, ServerCallContext context)
         {
-            this.Logger.LogWarning($"Publish {request.ConnectionId} {request.Topic} {request.Message}");
+            this.Logger.LogInformation($"Publish {request.ConnectionId} {request.Topic} {request.Message}");
             await this.PubSubManager.Publish(request.Topic, request.Message);
             return new PubSubReceipt { Success = true, Message = string.Empty };
         }
 
         public override Task<PubSubReceipt> Subscribe(SubscribeRequest request, ServerCallContext context)
         {
-            this.Logger.LogWarning($"Subscribe {request.ConnectionId} {string.Join(',',request.Topics)}");
-
+            this.Logger.LogInformation($"Subscribe {request.ConnectionId} {string.Join(',',request.Topics)}");
             var result = this.PubSubManager.Subscribe(request.ConnectionId, request.Topics.ToArray());
-
             return Task.FromResult(new PubSubReceipt{Success = result, Message = result ? string.Empty : "Failed to create subscription"});
         }
 
@@ -51,6 +48,7 @@ namespace GrpcIPCServer.Services
                     {
                         break;
                     }
+                    this.Logger.LogInformation($"Writing message {msg} to client {request.ConnectionId}");
                     await responseStream.WriteAsync(msg);
                 }
             }

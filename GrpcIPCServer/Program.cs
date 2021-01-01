@@ -1,49 +1,37 @@
-using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
+using GrpcIPCServer;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 using Serilog.Events;
 
-namespace GrpcIPCServer
+Log.Logger = new LoggerConfiguration()
+.MinimumLevel.Debug()
+.MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+.MinimumLevel.Override("Grpc", LogEventLevel.Warning)
+.Enrich.FromLogContext()
+.WriteTo.Console()
+.CreateLogger();
+
+
+CreateGRPCHostBuilder(args).Build().Run();
+
+static IHostBuilder CreateGRPCHostBuilder(string[] args) =>
+Host.CreateDefaultBuilder(args)
+.UseSerilog()
+.ConfigureWebHostDefaults(webBuilder =>
 {
-    public class Program
+
+    webBuilder.UseUrls();
+    webBuilder.ConfigureKestrel(options =>
     {
-        public static readonly string SocketPath = Path.Combine(Path.GetTempPath(), "ipc.tmp");
-
-        public static void Main(string[] args)
+        string SocketPath = Path.Combine(Path.GetTempPath(), "ipc.tmp");
+        if (File.Exists(SocketPath))
         {
-            Log.Logger = new LoggerConfiguration()
-            .MinimumLevel.Debug()
-            .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
-            .MinimumLevel.Override("Grpc", LogEventLevel.Warning)
-            .Enrich.FromLogContext()
-            .WriteTo.Console()
-            .CreateLogger();
-
-
-            CreateGRPCHostBuilder(args).Build().Run();
+            File.Delete(SocketPath);
         }
-
-        private static IHostBuilder CreateGRPCHostBuilder(string[] args) =>
-    Host.CreateDefaultBuilder(args)
-    .UseSerilog()
-        .ConfigureWebHostDefaults(webBuilder =>
-        {
-            webBuilder.UseUrls();
-            webBuilder.ConfigureKestrel(options =>
-            {
-                if (File.Exists(SocketPath))
-                {
-                    File.Delete(SocketPath);
-                }
-                options.ListenUnixSocket(SocketPath, o => o.Protocols = HttpProtocols.Http2);
-            });
-            webBuilder.UseStartup<GrpcStartup>();
-        });
-    }
-}
+        options.ListenUnixSocket(SocketPath, o => o.Protocols = HttpProtocols.Http2);
+    });
+    webBuilder.UseStartup<GrpcStartup>();
+});
