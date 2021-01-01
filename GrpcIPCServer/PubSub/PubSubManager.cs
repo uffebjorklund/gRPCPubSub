@@ -11,6 +11,8 @@ namespace GrpcIPCServer.PubSub
     public class PubSubManager
     {
         private readonly ConcurrentDictionary<Guid, SubscriptionContext> Subscriptions = new ();
+        private HashSet<string> cache = new();
+
 
         public async Task Publish(string topic, string message)
         {
@@ -72,14 +74,56 @@ namespace GrpcIPCServer.PubSub
 
                 foreach(var t in subscriptionContext.Value.Topics)
                 {
-                    // TODO: use MQTT matching for topics
-                    if(t == topic)
+                    if(this.IsMatch(topic, t))
                     {
                         yield return subscriptionContext.Value.Writer;
                         break;
                     }
                 }
             }
+        }
+
+        // TODO: use ReadOnlySpan<char> instead
+        public bool IsMatch(string messageTopic, string subscriptionTopic)
+        {
+            if (messageTopic == subscriptionTopic) return true;
+
+            if (subscriptionTopic == "#") return true;
+
+            var key = string.Concat(messageTopic, subscriptionTopic);
+
+            if (cache.Contains(key)) return true;
+
+            var pathLevels = messageTopic.Trim('/').Split('/');
+            var topicLevels = subscriptionTopic.Trim('/').Split('/');
+
+            var i = 0;
+            for (; i < pathLevels.Length; i++)
+            {
+                if (i >= topicLevels.Length)
+                {
+                    return false;
+                }
+                if (topicLevels[i] == "+")
+                {
+                    continue;
+                }
+                if (topicLevels[i] == "#")
+                {
+                    cache.Add(key);
+                    return true;
+                }
+                if (topicLevels[i] != pathLevels[i])
+                {
+                    return false;
+                }
+            }
+            if (i == topicLevels.Length)
+            {
+                cache.Add(key);
+                return true;
+            }
+            return false;
         }
     }
 }

@@ -5,17 +5,21 @@ This example will use UnixDomainSockets as transport for efficient IPC between p
 
 ## Example
 
+The sample client will publish messages with the topics `foo/bar/baz` and `foo/baz/bar`.
+The example supports MQTT subscriptions to that you can use wildcards...
+For example `foo/+/baz` will match `foo/bar/baz` and `foo/#` will match both `foo/bar/baz` and `foo/baz/bar`
+
  1. Start the server
 
     From the project root execute `dotnet run --project GrpcIPCServer/GrpcIPCServer.csproj`
 
  2. Start client 1
 
-    From the project root execute `dotnet run --project GrpcIPCClient/GrpcIPCClient.csproj foo/bar`
+    From the project root execute `dotnet run --project GrpcIPCClient/GrpcIPCClient.csproj foo/+/baz`
 
  3. Start client 2
 
-    From the project root execute `dotnet run --project GrpcIPCClient/GrpcIPCClient.csproj bar/foo`
+    From the project root execute `dotnet run --project GrpcIPCClient/GrpcIPCClient.csproj foo/#`
 
 
-Each client will now setup a subscription to individual topics. The sample client will publish messages with these two topics (`foo/bar` and `bar/foo`) with a 5 seconds interval
+Client 2 should get all messages but client 1 should only get `foo/bar/baz`

@@ -55,14 +55,14 @@ namespace GrpcIPCClient
                 {
                     var m1 = new PubSubMessage();
                     m1.ConnectionId = connId;
-                    m1.Topic = "foo/bar";
-                    m1.Message = $"Hello foo/bar from {connId}";
+                    m1.Topic = "foo/baz/bar";
+                    m1.Message = $"Hello foo/baz/bar from {connId}";
                     await client.PublishAsync(m1);
 
                     var m2 = new PubSubMessage();
                     m2.ConnectionId = connId;
-                    m2.Topic = "bar/foo";
-                    m2.Message = $"Hello bar/foo from {connId}";
+                    m2.Topic = "foo/bar/baz";
+                    m2.Message = $"Hello foo/bar/baz from {connId}";
                     await client.PublishAsync(m2);
 
                     await Task.Delay(5000);
