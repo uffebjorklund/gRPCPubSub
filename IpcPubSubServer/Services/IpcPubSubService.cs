@@ -2,17 +2,17 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Grpc.Core;
-using GrpcIPC;
-using GrpcIPCServer.PubSub;
+using IpcPubSub;
+using IpcPubSubServer;
 using Microsoft.Extensions.Logging;
 
-namespace GrpcIPCServer.Services
+namespace IpcPubSubServer.Services
 {
-    public class GrpcPubSubService : GrpcIPC.PubSub.PubSubBase
+    public class IpcPubSubService : PubSub.PubSubBase
     {
-        private readonly ILogger<GrpcPubSubService> Logger;
+        private readonly ILogger<IpcPubSubService> Logger;
         private readonly PubSubManager PubSubManager;
-        public GrpcPubSubService(ILogger<GrpcPubSubService> logger, PubSubManager pubSubManager)
+        public IpcPubSubService(ILogger<IpcPubSubService> logger, PubSubManager pubSubManager)
         {
             this.Logger = logger;
             this.PubSubManager = pubSubManager;
@@ -21,7 +21,7 @@ namespace GrpcIPCServer.Services
         public override async Task<PubSubReceipt> Publish(PubSubMessage request, ServerCallContext context)
         {
             this.Logger.LogInformation($"Publish {request.ConnectionId} {request.Topic} {request.Message}");
-            await this.PubSubManager.Publish(request.Topic, request.Message);
+            await this.PubSubManager.Publish(request);
             return new PubSubReceipt { Success = true, Message = string.Empty };
         }
 
@@ -42,7 +42,7 @@ namespace GrpcIPCServer.Services
                     return;
                 }
 
-                await foreach (var msg in channelReader.ReadAllAsync())
+                await foreach (var msg in channelReader.ReadAllAsync(context.CancellationToken))
                 {
                     if(context.CancellationToken.IsCancellationRequested is true)
                     {
@@ -58,6 +58,7 @@ namespace GrpcIPCServer.Services
             }
             finally
             {
+                this.Logger.LogWarning("Client removed");
                 this.PubSubManager.Remove(request.ConnectionId);
             }
         }

@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Grpc.Net.Client;
 
-namespace GrpcIPCClient
+namespace IpcPubSubClient
 {
     public class UnixDomainSocketConnectionFactory
     {

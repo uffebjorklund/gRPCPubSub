@@ -3,23 +3,22 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Channels;
 using System.Threading.Tasks;
-using GrpcIPC;
+using IpcPubSub;
 
-namespace GrpcIPCServer.PubSub
+namespace IpcPubSubServer
 {
     public class PubSubManager
     {
         private readonly ConcurrentDictionary<Guid, SubscriptionContext> Subscriptions = new ();
         private HashSet<string> cache = new();
 
-        public async Task Publish(string topic, string message)
+        public async Task Publish(PubSubMessage message)
         {
             // TODO: if topic matches connection id send directly to that connection.
-            var msg = new PubSubMessage{Topic = topic, Message = message};
-            foreach(var writer in this.GeSubscriptions(topic))
+            foreach(var writer in this.GeSubscriptions(message.Topic))
             {
                 // TODO: Handle exceptions...
-                await writer.WriteAsync(msg);
+                await writer.WriteAsync(message);
             }
         }
 

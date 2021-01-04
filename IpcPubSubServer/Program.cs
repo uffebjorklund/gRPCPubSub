@@ -1,5 +1,5 @@
 using System.IO;
-using GrpcIPCServer;
+using IpcPubSubServer;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Hosting;
@@ -7,7 +7,7 @@ using Serilog;
 using Serilog.Events;
 
 Log.Logger = new LoggerConfiguration()
-.MinimumLevel.Debug()
+.MinimumLevel.Warning()
 .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
 .MinimumLevel.Override("Grpc", LogEventLevel.Warning)
 .Enrich.FromLogContext()

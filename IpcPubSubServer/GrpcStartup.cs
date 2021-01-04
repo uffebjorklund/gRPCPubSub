@@ -1,10 +1,9 @@
-﻿using GrpcIPCServer.PubSub;
-using GrpcIPCServer.Services;
+﻿using IpcPubSubServer.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace GrpcIPCServer
+namespace IpcPubSubServer
 {
     public class GrpcStartup
     {
@@ -20,7 +19,7 @@ namespace GrpcIPCServer
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapGrpcService<GrpcPubSubService>();
+                endpoints.MapGrpcService<IpcPubSubService>();
             });
         }
     }

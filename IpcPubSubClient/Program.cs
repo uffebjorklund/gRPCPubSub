@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Grpc.Core;
-using GrpcIPC;
-using GrpcIPCClient;
+using IpcPubSub;
+using IpcPubSubClient;
 
 if (args.Length == 0)
 {
@@ -77,5 +77,4 @@ static void StartReceivingFromStream(PubSub.PubSubClient client, string connecti
             Console.WriteLine("ABORTED CONNECTION" + ex.Message);
         }
     });
-
 }

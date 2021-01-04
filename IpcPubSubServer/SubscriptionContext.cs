@@ -1,15 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Channels;
-using GrpcIPC;
+using IpcPubSub;
 
-namespace GrpcIPCServer.PubSub
+namespace IpcPubSubServer
 {
     public class SubscriptionContext
     {
-        public ChannelWriter<PubSubMessage> Writer{get;set;}
+        public ChannelWriter<PubSubMessage> Writer{get; private set;}
 
-        public ChannelReader<PubSubMessage> Reader { get; set; }
+        public ChannelReader<PubSubMessage> Reader { get; private set; }
 
         public List<string> Topics{get; set;} = new();
 
@@ -18,7 +18,7 @@ namespace GrpcIPCServer.PubSub
         public SubscriptionContext(Guid connectionId)
         {
             this.ConnectionId = connectionId;
-            var channel = Channel.CreateBounded<PubSubMessage>(new BoundedChannelOptions(100) { SingleReader = true, SingleWriter = true, FullMode = BoundedChannelFullMode.Wait });
+            var channel = Channel.CreateBounded<PubSubMessage>(new BoundedChannelOptions(1000) { SingleReader = true, SingleWriter = true, FullMode = BoundedChannelFullMode.Wait });
             this.Reader = channel.Reader;
             this.Writer = channel.Writer;
         }
